@@ -3,21 +3,24 @@ export interface Ship {
     size: number;
     color: string;
     dropped: boolean;
-};
+}
 
 export enum Direction {
     horizontal,
-    vertical
-};
+    vertical,
+}
 
-export type Coordinate = {
+export type ShipIndex = {
     x: number;
     y: number;
     ship: Ship;
-    direction: Direction
-}
+    direction: Direction;
+};
 
 export interface Board {
     values: string[][];
-    ships: Array<Coordinate>;
+    shipIndexes: Array<ShipIndex>;
+    hits: Object;
+    sunk: Array<Ship>;
+    shots: Array<String>;
 }

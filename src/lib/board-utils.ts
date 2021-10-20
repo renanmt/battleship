@@ -1,39 +1,54 @@
-import type { Board, Coordinate, Ship } from "../types";
-import { Direction } from '../types';
-import ships from './ships';
-import { getRandomFromInterval } from './utils';
-
+import type { Board, ShipIndex, Ship } from "../types";
+import { Direction } from "../types";
+import ships from "./ships";
+import { getRandomFromInterval } from "./utils";
 
 export const headerY = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 export const headerX = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "L"];
 
+export function getCoordinateName(x: number, y: number): string {
+    return `${headerX[x]}${headerY[y]}`;
+}
+
 export function createEmptyBoard(): Board {
-    const values = [...Array(10)].map(() => Array(10).fill(''));
+    const values = [...Array(10)].map(() => Array(10).fill(""));
 
     return {
         values,
-        ships: []
+        shipIndexes: [],
+        hits: {},
+        sunk: [],
+        shots: [],
     };
 }
 
-export function canFit(ship: Ship, x: number, y: number, direction: Direction, board: string[][]): boolean {
+export function canFit(
+    ship: Ship,
+    x: number,
+    y: number,
+    direction: Direction,
+    board: string[][]
+): boolean {
     if (direction === Direction.horizontal) {
         for (let i = x; i < x + ship.size; i++) {
-            if (board[y][i] !== '')
-                return false;
+            if (board[y][i] !== "") return false;
         }
-    }
-    else {
+    } else {
         for (let i = y; i < y + ship.size; i++) {
-            if (board[i][x] !== '')
-                return false;
+            if (board[i][x] !== "") return false;
         }
     }
 
     return true;
 }
 
-export function placeShip(ship: Ship, x: number, y: number, direction: Direction, board: Board): void {
+export function placeShip(
+    ship: Ship,
+    x: number,
+    y: number,
+    direction: Direction,
+    board: Board
+): void {
     if (direction === Direction.horizontal) {
         for (let i = x; i < x + ship.size; i++) {
             board.values[y][i] = ship.name;
@@ -44,38 +59,43 @@ export function placeShip(ship: Ship, x: number, y: number, direction: Direction
         }
     }
 
-    board.ships.push({ ship, x, y, direction });
+    board.shipIndexes.push({ ship, x, y, direction });
 }
 
 export function generateEnemyBoard(): Board {
     const board = createEmptyBoard();
 
-    // ships.forEach(ship => {
-    //     const direction = [Direction.horizontal, Direction.vertical][Math.floor(Math.random() * 2)];
-    //     const maxPoint = 10 - ship.size;
-    //     const [x, y] = [
-    //         getRandomFromInterval(0, maxPoint),
-    //         getRandomFromInterval(0, maxPoint)
-    //     ];
+    ships.forEach((ship) => {
+        let direction: Direction;
+        let x, y: number;
 
-    //     debugger;
-    //     console.log(x, y);
+        do {
+            direction = [Direction.horizontal, Direction.vertical][
+                Math.floor(Math.random() * 2)
+            ];
+            const maxPoint = 10 - ship.size;
+            [x, y] = [
+                getRandomFromInterval(0, maxPoint),
+                getRandomFromInterval(0, maxPoint),
+            ];
+        } while (!canFit(ship, x, y, direction, board.values));
 
-    //     while (!canFit(ship, x, y, direction, board.values)) { }
-
-    //     placeShip(ship, x, y, direction, board);
-    // });
+        placeShip(ship, x, y, direction, board);
+    });
 
     return board;
 }
 
-
-export function getCoordinate(x: number, y: number, coordinates: Array<Coordinate>): Array<Coordinate> {
-    const c = coordinates.find((s) => s.x === x && s.y === y);
+export function getShipIndex(
+    x: number,
+    y: number,
+    shipIndexes: Array<ShipIndex>
+): Array<ShipIndex> {
+    const c = shipIndexes.find((s) => s.x === x && s.y === y);
     return [c];
 }
 
-export function getTop(coordinate: Coordinate): number {
-    let top = 150 + (coordinate.ship.size * 50);
+export function getTop(shipIndex: ShipIndex): number {
+    let top = 150 + shipIndex.ship.size * 50;
     return top;
 }

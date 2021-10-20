@@ -1,14 +1,13 @@
 <script lang="ts">
     import { Board, ShipIndex, Direction } from "../types";
     import { getShipIndex, getTop, headerX, headerY } from "./board-utils";
-    import { OnShot, shoot, Turn } from "./game";
+    import { OnShot, Shoot, shoot, Shot, Turn } from "./game";
 
     export let board: Board;
     export let turn: Turn;
-    export let onShot: OnShot;
-    export let shotDone: boolean = false;
+    export const shootPlayer: Shoot = tryShoot;
 
-    export let debug = true;
+    const debug = true;
 
     function getBackgroundImage(shipIndex: ShipIndex): string {
         return debug
@@ -16,28 +15,19 @@
             : "";
     }
 
-    function tryShoot(x: number, y: number) {
-        if (!shotDone && turn === Turn.Player) {
-            const shot = shoot(x, y, board, turn);
-            board = board;
-            shotDone = true;
-            onShot(shot);
-        }
+    function tryShoot(x: number, y: number): Shot {
+        const shot = shoot(x, y, board, turn);
+        board = board;
+        return shot;
     }
 
     function getCellClass(column: string): string {
-        let className = debug && column !== '' ? "" : "empty";
+        let className = column ? "" : "empty";
 
         className += column.includes("-hit") ? " hit" : "";
-        className += column === "miss" ? " miss" : "";
-        className += !column.includes('-hit') || !column.includes('-miss') && turn === Turn.Player ? " aim" : "";
+        className += column === "miss" ? "miss" : "";
 
         return className;
-    }
-
-    $: if (turn === Turn.CPU) {
-        debugger;
-        shotDone = false;
     }
 </script>
 
@@ -59,10 +49,19 @@
                     data-x={x}
                     data-y={y}
                     class="cell {getCellClass(column)}"
-                    on:click={(e) => tryShoot(x, y)}
                 >
                     {#each getShipIndex(x, y, board.shipIndexes) as shipIndex}
-                        {#if debug && shipIndex !== undefined}
+                        {#if column.includes("-hit")}
+                            <div
+                                class="cell hit"
+                                style="position: relative;
+                                       width: 100%;
+                                       height: 100%;
+                                       float: left;
+                                       z-index: 99999;"
+                            />
+                        {/if}
+                        {#if shipIndex !== undefined}
                             <div
                                 style="{getBackgroundImage(shipIndex)};
                                        {column
@@ -104,7 +103,7 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-            overflow: hidden;
+            overflow: visible;
 
             &.empty {
                 background-image: url("../assets/water16x16.gif");
@@ -116,12 +115,7 @@
                 transform: rotate(270deg);
             }
 
-            &.aim:hover {
-                cursor: crosshair;
-            }
-
             &.hit {
-                background-color: #5c9ce2;
                 background-image: url("../assets/explosion.png");
                 background-size: contain;
             }

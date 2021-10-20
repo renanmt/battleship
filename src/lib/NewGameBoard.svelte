@@ -8,13 +8,12 @@
     import GameBoard from "./GameBoard.svelte";
 
     export let board: Board;
-    export const isReady = () => gameReady;
+    export let gameReady = false;
 
     let direction: Direction = Direction.horizontal;
     let currentShipDrag: Ship | undefined;
     let currentDragOver: string | undefined;
     let shipsDropped = 0;
-    let gameReady = false;
 
     $: gameReady = shipsDropped === ships.length;
 
@@ -29,9 +28,9 @@
             crt.style.left = "-300px";
 
             const inner = crt.getElementsByClassName("ship")[0] as HTMLElement;
-            inner.style['background-repeat'] = 'no-repeat';
-            inner.style['background-position'] = 'center';
-            inner.style['transformOrigin'] = '-75px -75px'
+            inner.style["background-repeat"] = "no-repeat";
+            inner.style["background-position"] = "center";
+            inner.style["transformOrigin"] = "-75px -75px";
 
             inner.style.transform = "rotate(270deg)";
 

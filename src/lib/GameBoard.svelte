@@ -1,7 +1,7 @@
 <script lang="ts">
-    import type { Board, Coordinate, Ship } from "../types";
+    import type { Board, ShipIndex, Ship } from "../types";
     import { Direction } from "../types";
-    import { getCoordinate, getTop, headerY, headerX } from "./board-utils";
+    import { getShipIndex, getTop, headerY, headerX } from "./board-utils";
 
     export let board: Board;
     export let ships: Ship[];
@@ -11,8 +11,6 @@
     export let canDrop: Function;
     export let shipDragOver: Function;
     export let shipDrop: Function;
-
-    $: console.log(board);
 </script>
 
 <div class="game-board">
@@ -39,27 +37,27 @@
                 {!gameReady && currentDragOver === `${headerY[y]}${x + 1}`
                         ? 'drop-zone-over'
                         : ''} "
-                    style={column
-                        ? `background-color: #5d9ce2`
-                        : ""}
+                    style={column ? `background-color: #5d9ce2` : ""}
                     on:dragover={!gameReady && currentShipDrag && canDrop(x, y)
                         ? (e) => shipDragOver(e)
                         : undefined}
                     on:drop={!gameReady ? (e) => shipDrop(e) : undefined}
                 >
-                    {#each getCoordinate(x, y, board.ships) as coordinate}
-                        {#if coordinate !== undefined}
+                    {#each getShipIndex(x, y, board.shipIndexes) as shipIndex}
+                        {#if shipIndex !== undefined}
                             <div
                                 style="
-                                background-image: url(../assets/{coordinate.ship
+                                background-image: url(../assets/{shipIndex.ship
                                     .name}h.png);
                                 background-repeat: no-repeat;
                                 background-position: center;
                                 position: relative;
-                                width: {coordinate.ship.size * 50}px;
+                                width: {shipIndex.ship.size * 50}px;
                                 height: 50px; 
-                                {coordinate.direction === Direction.vertical
-                                    ? `transform: rotate(270deg); transform-origin: -75px -75px; top: ${getTop(coordinate)}px;"`
+                                {shipIndex.direction === Direction.vertical
+                                    ? `transform: rotate(270deg); transform-origin: -75px -75px; top: ${getTop(
+                                          shipIndex
+                                      )}px;"`
                                     : ''}
                                 "
                             />
