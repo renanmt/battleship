@@ -1,8 +1,18 @@
 <script lang="ts">
-    import { Board, Direction } from '../types';
-    import { getCoordinate, getTop, headerX, headerY } from './board-utils';
-    
+    import type { Board, Coordinate, Ship } from "../types";
+    import { Direction } from "../types";
+    import { getCoordinate, getTop, headerY, headerX } from "./board-utils";
+
     export let board: Board;
+    export let ships: Ship[];
+    export let currentShipDrag: Ship;
+    export let currentDragOver: string;
+    export let gameReady: boolean;
+    export let canDrop: Function;
+    export let shipDragOver: Function;
+    export let shipDrop: Function;
+
+    $: console.log(board);
 </script>
 
 <div class="game-board">
@@ -22,7 +32,20 @@
                     id={`${headerY[y]}${x + 1}`}
                     data-x={x}
                     data-y={y}
-                    class="cell {column ? '' : ' empty'}"
+                    class="cell {column ? '' : ' empty'} 
+                {!gameReady && currentShipDrag && canDrop(x, y)
+                        ? 'drop-zone'
+                        : ''} 
+                {!gameReady && currentDragOver === `${headerY[y]}${x + 1}`
+                        ? 'drop-zone-over'
+                        : ''} "
+                    style={column
+                        ? `background-color: #5d9ce2`
+                        : ""}
+                    on:dragover={!gameReady && currentShipDrag && canDrop(x, y)
+                        ? (e) => shipDragOver(e)
+                        : undefined}
+                    on:drop={!gameReady ? (e) => shipDrop(e) : undefined}
                 >
                     {#each getCoordinate(x, y, board.ships) as coordinate}
                         {#if coordinate !== undefined}

@@ -13,7 +13,8 @@ export enum Direction {
 export type Coordinate = {
     x: number;
     y: number;
-    ship: Ship
+    ship: Ship;
+    direction: Direction
 }
 
 export interface Board {

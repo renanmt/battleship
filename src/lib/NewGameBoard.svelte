@@ -5,12 +5,10 @@
     import ships from "./ships";
 
     import { canFit, placeShip } from "./board-utils";
-    
+    import GameBoard from "./GameBoard.svelte";
+
     export let board: Board;
     export const isReady = () => gameReady;
-
-    const headerX = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    const headerY = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "L"];
 
     let direction: Direction = Direction.horizontal;
     let currentShipDrag: Ship | undefined;
@@ -31,7 +29,10 @@
             crt.style.left = "-300px";
 
             const inner = crt.getElementsByClassName("ship")[0] as HTMLElement;
-            inner.style["background-size"] = "100% 100%";
+            inner.style['background-repeat'] = 'no-repeat';
+            inner.style['background-position'] = 'center';
+            inner.style['transformOrigin'] = '-75px -75px'
+
             inner.style.transform = "rotate(270deg)";
 
             document.body.appendChild(crt);
@@ -51,7 +52,9 @@
     function shipDragEnd(e: DragEvent) {
         currentShipDrag = undefined;
         currentDragOver = undefined;
-        document.getElementById("ghost").remove();
+        if (direction === Direction.vertical) {
+            document.getElementById("ghost").remove();
+        }
     }
 
     function shipDrop(e: DragEvent) {
@@ -62,7 +65,7 @@
 
         if (canFit(currentShipDrag, x, y, direction, board.values)) {
             placeShip(currentShipDrag, x, y, direction, board);
-            
+
             board = board;
 
             currentShipDrag.dropped = true;
@@ -121,52 +124,22 @@
                     {!ship.dropped ? 'draggable' : ''} 
                     {direction === Direction.vertical ? 'vertical' : ''} "
                     style={getStyle(ship)}
-                >
-                </div>
+                />
             </div>
         {/each}
     </div>
 {/if}
 
-<div class="game-board">
-    <div class="header" />
-    {#each headerX as hx}
-        <div class="header">
-            {hx}
-        </div>
-    {/each}
-
-    {#each board.values as row, y}
-        <div class="header">
-            {headerY[y]}
-        </div>
-        {#each row as column, x}
-            <div
-                id={`${headerY[y]}${x + 1}`}
-                data-x={x}
-                data-y={y}
-                class="cell 
-                    {column ? '' : ' empty'}
-                    {!gameReady && currentShipDrag && canDrop(x, y)
-                    ? 'drop-zone'
-                    : ''} 
-                    {!gameReady && currentDragOver === `${headerY[y]}${x + 1}`
-                    ? 'drop-zone-over'
-                    : ''}
-                "
-                style={column
-                    ? `background-color: ${
-                          ships.find((s) => s.name === column).color
-                      }`
-                    : ""}
-                on:dragover={!gameReady && currentShipDrag && canDrop(x, y)
-                    ? shipDragOver
-                    : undefined}
-                on:drop={!gameReady ? shipDrop : undefined}
-            />
-        {/each}
-    {/each}
-</div>
+<GameBoard
+    {board}
+    {ships}
+    {currentShipDrag}
+    {currentDragOver}
+    {gameReady}
+    {canDrop}
+    {shipDragOver}
+    {shipDrop}
+/>
 
 <style lang="scss">
     .direction {
@@ -218,45 +191,6 @@
                 transition-duration: 200ms;
                 transition-timing-function: ease-in-out;
             }
-        }
-    }
-
-    .game-board {
-        display: grid;
-        grid-template-columns: 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px;
-        grid-template-rows: 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px 50px;
-        justify-content: center;
-
-        .cell {
-            border: 1px solid #b2e7f2;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-
-            &.empty {
-                background-image: url("../assets/water16x16.gif");
-                background-size: contain;
-                -webkit-transform: rotate(270deg);
-                -moz-transform: rotate(270deg);
-                -ms-transform: rotate(270deg);
-                -o-transform: rotate(270deg);
-                transform: rotate(270deg);
-            }
-        }
-
-        header {
-            vertical-align: middle;
-        }
-
-        .drop-zone {
-            background-color: #ebf5fb;
-        }
-
-        .drop-zone-over {
-            opacity: 50%;
         }
     }
 </style>

@@ -1,11 +1,13 @@
 <script lang="ts">
-	import BoardMessage from './lib/BoardMessage.svelte';
-	import NewGameBoard from './lib/NewGameBoard.svelte';
+	import BoardMessage from "./lib/BoardMessage.svelte";
+	import NewGameBoard from "./lib/NewGameBoard.svelte";
+	import EnemyBoard from "./lib/EnemyBoard.svelte";
 
-	import * as messages from './lib/messages';
-	import { createEmptyBoard } from './lib/board-utils';
+	import * as messages from "./lib/messages";
+	import { createEmptyBoard, generateEnemyBoard } from "./lib/board-utils";
 
 	let myBoard = createEmptyBoard();
+	let enemyBoard = generateEnemyBoard();
 
 	let gameReady;
 	let message;
@@ -18,10 +20,19 @@
 <main>
 	<h1>Battleship Web</h1>
 	<BoardMessage bind:message />
-	<NewGameBoard bind:board={myBoard} bind:isReady={gameReady} />
+	<div class="boards">
+		<div class="player-board">
+			<NewGameBoard bind:board={myBoard} bind:isReady={gameReady} /> -->
+		</div>
+		{#if gameReady}
+			<div class="enemy-board">
+				<EnemyBoard board={enemyBoard} />
+			</div>
+		{/if}
+	</div>
 </main>
 
-<style>
+<style lang="scss">
 	main {
 		text-align: center;
 		padding: 1em;
@@ -40,5 +51,10 @@
 		main {
 			max-width: none;
 		}
+	}
+
+	.boards {
+		display: grid;
+		align-content: center;
 	}
 </style>
